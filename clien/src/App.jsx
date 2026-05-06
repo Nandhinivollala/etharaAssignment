@@ -1,37 +1,42 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
-const initialForm = {
+const initialAuthForm = {
   name: '',
   email: '',
   password: '',
   role: 'Member',
 }
 
-const demoProjects = [
-  {
-    name: 'Atlas Backend',
-    owner: 'Admin',
-    status: 'API ready',
-    progress: 72,
-  },
-  {
-    name: 'Member Portal',
-    owner: 'Member',
-    status: 'UI in progress',
-    progress: 48,
-  },
-  {
-    name: 'Testing Flow',
-    owner: 'Admin',
-    status: 'Review',
-    progress: 86,
-  },
-]
+const initialProjectForm = {
+  name: '',
+  description: '',
+  status: 'Planning',
+}
+
+const initialTaskForm = {
+  title: '',
+  description: '',
+  project: '',
+  assignedTo: '',
+  status: 'Todo',
+  dueDate: '',
+}
+
+const emptySummary = {
+  totalProjects: 0,
+  totalTasks: 0,
+  todoTasks: 0,
+  inProgressTasks: 0,
+  doneTasks: 0,
+  overdueTasks: 0,
+}
 
 function App() {
   const [mode, setMode] = useState('login')
-  const [form, setForm] = useState(initialForm)
+  const [form, setForm] = useState(initialAuthForm)
+  const [projectForm, setProjectForm] = useState(initialProjectForm)
+  const [taskForm, setTaskForm] = useState(initialTaskForm)
   const [auth, setAuth] = useState(() => {
     const saved = localStorage.getItem('pm_auth')
     return saved ? JSON.parse(saved) : null
@@ -39,18 +44,11 @@ function App() {
   const [apiStatus, setApiStatus] = useState('Not checked')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [summary, setSummary] = useState(emptySummary)
+  const [projects, setProjects] = useState([])
+  const [tasks, setTasks] = useState([])
 
   const isAdmin = auth?.user?.role === 'Admin'
-
-  const visibleProjects = useMemo(() => {
-    if (isAdmin) return demoProjects
-    return demoProjects.filter((project) => project.owner === 'Member')
-  }, [isAdmin])
-
-  const updateForm = (event) => {
-    const { name, value } = event.target
-    setForm((current) => ({ ...current, [name]: value }))
-  }
 
   const request = async (path, options = {}) => {
     const response = await fetch(path, {
@@ -69,6 +67,63 @@ function App() {
     }
 
     return data
+  }
+
+  const loadWorkspace = async () => {
+    if (!auth) return
+
+    const [summaryData, projectData, taskData] = await Promise.all([
+      request('/api/dashboard/summary'),
+      request('/api/projects'),
+      request('/api/tasks'),
+    ])
+
+    setSummary(summaryData.summary)
+    setProjects(projectData.projects)
+    setTasks(taskData.tasks)
+  }
+
+  useEffect(() => {
+    if (!auth) return
+
+    const token = auth.token
+
+    Promise.all([
+      fetch('/api/dashboard/summary', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((response) => response.json()),
+      fetch('/api/projects', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((response) => response.json()),
+      fetch('/api/tasks', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((response) => response.json()),
+    ])
+      .then(([summaryData, projectData, taskData]) => {
+        if (!summaryData.success) throw new Error(summaryData.message)
+        if (!projectData.success) throw new Error(projectData.message)
+        if (!taskData.success) throw new Error(taskData.message)
+
+        setSummary(summaryData.summary)
+        setProjects(projectData.projects)
+        setTasks(taskData.tasks)
+      })
+      .catch((error) => setMessage(error.message))
+  }, [auth])
+
+  const updateForm = (event) => {
+    const { name, value } = event.target
+    setForm((current) => ({ ...current, [name]: value }))
+  }
+
+  const updateProjectForm = (event) => {
+    const { name, value } = event.target
+    setProjectForm((current) => ({ ...current, [name]: value }))
+  }
+
+  const updateTaskForm = (event) => {
+    const { name, value } = event.target
+    setTaskForm((current) => ({ ...current, [name]: value }))
   }
 
   const submitAuth = async (event) => {
@@ -91,11 +146,71 @@ function App() {
       setAuth(data)
       localStorage.setItem('pm_auth', JSON.stringify(data))
       setMessage(`${mode === 'login' ? 'Login' : 'Registration'} successful`)
-      setForm(initialForm)
+      setForm(initialAuthForm)
     } catch (error) {
       setMessage(error.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const createProject = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setMessage('')
+
+    try {
+      await request('/api/projects', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...projectForm,
+          teamMembers: [auth.user.id],
+        }),
+      })
+      setProjectForm(initialProjectForm)
+      setMessage('Project created')
+      await loadWorkspace()
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const createTask = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setMessage('')
+
+    try {
+      await request('/api/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...taskForm,
+          assignedTo: taskForm.assignedTo || auth.user.id,
+        }),
+      })
+      setTaskForm(initialTaskForm)
+      setMessage('Task created')
+      await loadWorkspace()
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateTaskStatus = async (taskId, status) => {
+    setMessage('')
+
+    try {
+      await request(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      })
+      await loadWorkspace()
+    } catch (error) {
+      setMessage(error.message)
     }
   }
 
@@ -126,6 +241,9 @@ function App() {
 
   const logout = () => {
     setAuth(null)
+    setProjects([])
+    setTasks([])
+    setSummary(emptySummary)
     localStorage.removeItem('pm_auth')
     setMessage('Logged out')
   }
@@ -135,7 +253,7 @@ function App() {
       <section className="topbar">
         <div>
           <p className="eyebrow">Ethara Assignment</p>
-          <h1>Project Manager</h1>
+          <h1>Team Task Manager</h1>
         </div>
         <button className="ghost-button" onClick={testApi} type="button">
           Test API
@@ -246,37 +364,158 @@ function App() {
               <p className="eyebrow">Role-based view</p>
               <h2>{isAdmin ? 'Admin Dashboard' : 'Member Dashboard'}</h2>
             </div>
-            <span>{visibleProjects.length} projects</span>
+            <span>{summary.totalProjects} projects</span>
           </div>
 
           <div className="metrics">
             <div>
-              <span>Total Projects</span>
-              <strong>{visibleProjects.length}</strong>
+              <span>Total Tasks</span>
+              <strong>{summary.totalTasks}</strong>
             </div>
             <div>
-              <span>Role</span>
-              <strong>{auth?.user?.role || 'Guest'}</strong>
+              <span>In Progress</span>
+              <strong>{summary.inProgressTasks}</strong>
             </div>
             <div>
-              <span>Auth</span>
-              <strong>{auth ? 'JWT active' : 'Required'}</strong>
+              <span>Overdue</span>
+              <strong>{summary.overdueTasks}</strong>
             </div>
           </div>
 
+          {isAdmin && (
+            <div className="management-grid">
+              <form className="manager-form" onSubmit={createProject}>
+                <p className="eyebrow">Create project</p>
+                <label>
+                  Project name
+                  <input
+                    name="name"
+                    onChange={updateProjectForm}
+                    placeholder="Client launch"
+                    required
+                    value={projectForm.name}
+                  />
+                </label>
+                <label>
+                  Description
+                  <input
+                    name="description"
+                    onChange={updateProjectForm}
+                    placeholder="Project goal"
+                    value={projectForm.description}
+                  />
+                </label>
+                <label>
+                  Status
+                  <select
+                    name="status"
+                    onChange={updateProjectForm}
+                    value={projectForm.status}
+                  >
+                    <option>Planning</option>
+                    <option>In Progress</option>
+                    <option>Completed</option>
+                    <option>On Hold</option>
+                  </select>
+                </label>
+                <button disabled={loading} type="submit">
+                  Add Project
+                </button>
+              </form>
+
+              <form className="manager-form" onSubmit={createTask}>
+                <p className="eyebrow">Create task</p>
+                <label>
+                  Task title
+                  <input
+                    name="title"
+                    onChange={updateTaskForm}
+                    placeholder="Prepare demo"
+                    required
+                    value={taskForm.title}
+                  />
+                </label>
+                <label>
+                  Project
+                  <select
+                    name="project"
+                    onChange={updateTaskForm}
+                    required
+                    value={taskForm.project}
+                  >
+                    <option value="">Select project</option>
+                    {projects.map((project) => (
+                      <option key={project._id} value={project._id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Due date
+                  <input
+                    name="dueDate"
+                    onChange={updateTaskForm}
+                    required
+                    type="date"
+                    value={taskForm.dueDate}
+                  />
+                </label>
+                <button disabled={loading || projects.length === 0} type="submit">
+                  Add Task
+                </button>
+              </form>
+            </div>
+          )}
+
+          <div className="section-title">
+            <h3>Projects</h3>
+            <span>{projects.length}</span>
+          </div>
           <div className="project-list">
-            {visibleProjects.map((project) => (
-              <article className="project-card" key={project.name}>
-                <div>
-                  <h3>{project.name}</h3>
-                  <p>{project.status}</p>
-                </div>
-                <span>{project.progress}%</span>
-                <div className="progress-track">
-                  <div style={{ width: `${project.progress}%` }} />
-                </div>
-              </article>
-            ))}
+            {projects.length === 0 ? (
+              <p className="empty-state">No projects yet.</p>
+            ) : (
+              projects.map((project) => (
+                <article className="project-card" key={project._id}>
+                  <div>
+                    <h3>{project.name}</h3>
+                    <p>{project.description || 'No description'}</p>
+                  </div>
+                  <span>{project.status}</span>
+                </article>
+              ))
+            )}
+          </div>
+
+          <div className="section-title">
+            <h3>Tasks</h3>
+            <span>{tasks.length}</span>
+          </div>
+          <div className="task-list">
+            {tasks.length === 0 ? (
+              <p className="empty-state">No tasks yet.</p>
+            ) : (
+              tasks.map((task) => (
+                <article className="task-card" key={task._id}>
+                  <div>
+                    <h3>{task.title}</h3>
+                    <p>
+                      {task.project?.name || 'No project'} | Due{' '}
+                      {new Date(task.dueDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <select
+                    onChange={(event) => updateTaskStatus(task._id, event.target.value)}
+                    value={task.status}
+                  >
+                    <option>Todo</option>
+                    <option>In Progress</option>
+                    <option>Done</option>
+                  </select>
+                </article>
+              ))
+            )}
           </div>
         </section>
       </section>

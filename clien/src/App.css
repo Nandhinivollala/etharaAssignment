@@ -248,12 +248,43 @@ button:focus-visible {
   font-size: 22px;
 }
 
+.management-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 20px;
+}
+
+.manager-form {
+  background: #f7f8fb;
+  border: 1px solid #e3e8f1;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.section-title {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 18px 0 10px;
+}
+
+.section-title span {
+  background: #eef3fb;
+  border-radius: 999px;
+  color: #1769e0;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 5px 10px;
+}
+
 .project-list {
   display: grid;
   gap: 12px;
 }
 
-.project-card {
+.project-card,
+.task-card {
   align-items: center;
   border: 1px solid #e3e8f1;
   border-radius: 8px;
@@ -264,7 +295,8 @@ button:focus-visible {
   text-align: left;
 }
 
-.project-card p {
+.project-card p,
+.task-card p {
   color: #5d6b82;
   font-size: 14px;
   margin-top: 3px;
@@ -273,6 +305,25 @@ button:focus-visible {
 .project-card > span {
   color: #1769e0;
   font-weight: 800;
+}
+
+.task-list {
+  display: grid;
+  gap: 12px;
+}
+
+.task-card select {
+  min-width: 150px;
+}
+
+.empty-state {
+  background: #f7f8fb;
+  border: 1px dashed #cfd7e6;
+  border-radius: 8px;
+  color: #5d6b82;
+  font-weight: 700;
+  padding: 18px;
+  text-align: center;
 }
 
 .progress-track {
@@ -302,7 +353,10 @@ button:focus-visible {
   }
 
   .workspace,
-  .metrics {
+  .metrics,
+  .management-grid,
+  .project-card,
+  .task-card {
     grid-template-columns: 1fr;
   }
 }
