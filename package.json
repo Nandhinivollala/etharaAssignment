@@ -1,0 +1,13 @@
+{
+  "name": "project-manager-assignment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack project manager assignment with React frontend and Express backend.",
+  "scripts": {
+    "client:dev": "npm --prefix clien run dev",
+    "client:build": "npm --prefix clien run build",
+    "client:lint": "npm --prefix clien run lint",
+    "server:dev": "npm --prefix server run dev",
+    "server:start": "npm --prefix server start"
+  }
+}
