@@ -9,4 +9,7 @@ export default defineConfig({
       '/api': 'http://localhost:5000',
     },
   },
+  preview: {
+    allowedHosts: ['lucky-enthusiasm-production-c902.up.railway.app'],
+  },
 })
