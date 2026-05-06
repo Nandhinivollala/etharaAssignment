@@ -32,6 +32,8 @@ const emptySummary = {
   overdueTasks: 0,
 }
 
+const API_URL = import.meta.env.VITE_API_URL || ''
+
 function App() {
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState(initialAuthForm)
@@ -51,7 +53,7 @@ function App() {
   const isAdmin = auth?.user?.role === 'Admin'
 
   const request = async (path, options = {}) => {
-    const response = await fetch(path, {
+    const response = await fetch(`${API_URL}${path}`, {
       headers: {
         'Content-Type': 'application/json',
         ...(auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}),
@@ -89,13 +91,13 @@ function App() {
     const token = auth.token
 
     Promise.all([
-      fetch('/api/dashboard/summary', {
+      fetch(`${API_URL}/api/dashboard/summary`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((response) => response.json()),
-      fetch('/api/projects', {
+      fetch(`${API_URL}/api/projects`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((response) => response.json()),
-      fetch('/api/tasks', {
+      fetch(`${API_URL}/api/tasks`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((response) => response.json()),
     ])

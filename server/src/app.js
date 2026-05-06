@@ -7,10 +7,13 @@ const taskRoutes = require("./routes/taskRoutes");
 const testRoutes = require("./routes/testRoutes");
 
 const app = express();
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true
   })
 );
