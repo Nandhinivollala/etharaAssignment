@@ -334,9 +334,9 @@ button:focus-visible {
 .member-actions {
   align-items: center;
   display: grid;
-  grid-template-columns: 70px 80px 110px;
+  grid-template-columns: 86px 82px 110px;
   gap: 8px;
-  justify-items: end;
+  justify-items: start;
 }
 
 .member-actions button {
