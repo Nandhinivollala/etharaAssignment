@@ -306,9 +306,30 @@ button:focus-visible {
 }
 
 .project-card > span,
-.member-card > span {
+.member-actions > span {
   color: #1769e0;
   font-weight: 800;
+}
+
+.member-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: end;
+}
+
+.member-actions button {
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.member-actions .active-status {
+  color: #136b35;
+}
+
+.member-actions .inactive-status {
+  color: #b42318;
 }
 
 .task-list {
@@ -363,5 +384,9 @@ button:focus-visible {
   .task-card,
   .member-card {
     grid-template-columns: 1fr;
+  }
+
+  .member-actions {
+    justify-content: start;
   }
 }

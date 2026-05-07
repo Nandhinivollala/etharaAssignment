@@ -226,6 +226,21 @@ function App() {
     }
   }
 
+  const updateUserStatus = async (userId, isActive) => {
+    setMessage('')
+
+    try {
+      await request(`/api/users/${userId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive }),
+      })
+      setMessage(isActive ? 'Member reactivated' : 'Member deactivated')
+      await loadWorkspace()
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
   const testApi = async () => {
     setApiStatus('Checking...')
 
@@ -474,7 +489,7 @@ function App() {
                     <option value="">Assign to me</option>
                     {users.map((user) => (
                       <option key={user._id} value={user._id}>
-                        {user.name} ({user.role})
+                        {user.name}
                       </option>
                     ))}
                   </select>
@@ -512,7 +527,21 @@ function App() {
                         <h3>{user.name}</h3>
                         <p>{user.email}</p>
                       </div>
-                      <span>{user.role}</span>
+                      <div className="member-actions">
+                        <span className={user.isActive ? 'active-status' : 'inactive-status'}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        <span>{user.role}</span>
+                        {user._id !== auth.user.id && (
+                          <button
+                            className="secondary-button"
+                            onClick={() => updateUserStatus(user._id, !user.isActive)}
+                            type="button"
+                          >
+                            {user.isActive ? 'Deactivate' : 'Reactivate'}
+                          </button>
+                        )}
+                      </div>
                     </article>
                   ))
                 )}

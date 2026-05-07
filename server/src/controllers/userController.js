@@ -2,8 +2,8 @@ const User = require("../models/User");
 
 const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({})
-      .select("name email role createdAt")
+    const users = await User.find({ role: "Member" })
+      .select("name email role isActive createdAt")
       .sort({ createdAt: -1 });
 
     res.json({
@@ -16,6 +16,42 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+const updateUserStatus = async (req, res, next) => {
+  try {
+    const { isActive } = req.body;
+
+    if (typeof isActive !== "boolean") {
+      res.status(400);
+      throw new Error("isActive boolean value is required");
+    }
+
+    if (req.params.id === req.user._id.toString()) {
+      res.status(400);
+      throw new Error("Admins cannot deactivate their own account");
+    }
+
+    const user = await User.findById(req.params.id).select(
+      "name email role isActive createdAt"
+    );
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    user.isActive = isActive;
+    await user.save();
+
+    res.json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  getUsers
+  getUsers,
+  updateUserStatus
 };

@@ -21,7 +21,8 @@ const sendAuthResponse = (res, statusCode, user) => {
       id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      isActive: user.isActive
     }
   });
 };
@@ -69,6 +70,11 @@ const login = async (req, res, next) => {
     if (!user || !(await user.matchPassword(password))) {
       res.status(401);
       throw new Error("Invalid email or password");
+    }
+
+    if (!user.isActive) {
+      res.status(403);
+      throw new Error("Account is deactivated. Please contact an admin");
     }
 
     sendAuthResponse(res, 200, user);

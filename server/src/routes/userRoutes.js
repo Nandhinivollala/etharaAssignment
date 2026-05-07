@@ -1,10 +1,13 @@
 const express = require("express");
-const { getUsers } = require("../controllers/userController");
+const { getUsers, updateUserStatus } = require("../controllers/userController");
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-router.get("/", protect, authorizeRoles("Admin"), getUsers);
+router.use(protect, authorizeRoles("Admin"));
+
+router.get("/", getUsers);
+router.patch("/:id/status", updateUserStatus);
 
 module.exports = router;
