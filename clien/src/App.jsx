@@ -49,6 +49,7 @@ function App() {
   const [summary, setSummary] = useState(emptySummary)
   const [projects, setProjects] = useState([])
   const [tasks, setTasks] = useState([])
+  const [users, setUsers] = useState([])
 
   const isAdmin = auth?.user?.role === 'Admin'
 
@@ -74,15 +75,17 @@ function App() {
   const loadWorkspace = async () => {
     if (!auth) return
 
-    const [summaryData, projectData, taskData] = await Promise.all([
+    const [summaryData, projectData, taskData, userData] = await Promise.all([
       request('/api/dashboard/summary'),
       request('/api/projects'),
       request('/api/tasks'),
+      isAdmin ? request('/api/users') : Promise.resolve({ users: [] }),
     ])
 
     setSummary(summaryData.summary)
     setProjects(projectData.projects)
     setTasks(taskData.tasks)
+    setUsers(userData.users)
   }
 
   useEffect(() => {
@@ -100,18 +103,25 @@ function App() {
       fetch(`${API_URL}/api/tasks`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((response) => response.json()),
+      isAdmin
+        ? fetch(`${API_URL}/api/users`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((response) => response.json())
+        : Promise.resolve({ success: true, users: [] }),
     ])
-      .then(([summaryData, projectData, taskData]) => {
+      .then(([summaryData, projectData, taskData, userData]) => {
         if (!summaryData.success) throw new Error(summaryData.message)
         if (!projectData.success) throw new Error(projectData.message)
         if (!taskData.success) throw new Error(taskData.message)
+        if (!userData.success) throw new Error(userData.message)
 
         setSummary(summaryData.summary)
         setProjects(projectData.projects)
         setTasks(taskData.tasks)
+        setUsers(userData.users)
       })
       .catch((error) => setMessage(error.message))
-  }, [auth])
+  }, [auth, isAdmin])
 
   const updateForm = (event) => {
     const { name, value } = event.target
@@ -245,6 +255,7 @@ function App() {
     setAuth(null)
     setProjects([])
     setTasks([])
+    setUsers([])
     setSummary(emptySummary)
     localStorage.removeItem('pm_auth')
     setMessage('Logged out')
@@ -454,6 +465,21 @@ function App() {
                   </select>
                 </label>
                 <label>
+                  Assign to
+                  <select
+                    name="assignedTo"
+                    onChange={updateTaskForm}
+                    value={taskForm.assignedTo}
+                  >
+                    <option value="">Assign to me</option>
+                    {users.map((user) => (
+                      <option key={user._id} value={user._id}>
+                        {user.name} ({user.role})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
                   Due date
                   <input
                     name="dueDate"
@@ -468,6 +494,30 @@ function App() {
                 </button>
               </form>
             </div>
+          )}
+
+          {isAdmin && (
+            <>
+              <div className="section-title">
+                <h3>Members</h3>
+                <span>{users.length}</span>
+              </div>
+              <div className="member-list">
+                {users.length === 0 ? (
+                  <p className="empty-state">No members yet.</p>
+                ) : (
+                  users.map((user) => (
+                    <article className="member-card" key={user._id}>
+                      <div>
+                        <h3>{user.name}</h3>
+                        <p>{user.email}</p>
+                      </div>
+                      <span>{user.role}</span>
+                    </article>
+                  ))
+                )}
+              </div>
+            </>
           )}
 
           <div className="section-title">

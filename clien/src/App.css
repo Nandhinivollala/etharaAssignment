@@ -278,13 +278,15 @@ button:focus-visible {
   padding: 5px 10px;
 }
 
-.project-list {
+.project-list,
+.member-list {
   display: grid;
   gap: 12px;
 }
 
 .project-card,
-.task-card {
+.task-card,
+.member-card {
   align-items: center;
   border: 1px solid #e3e8f1;
   border-radius: 8px;
@@ -296,13 +298,15 @@ button:focus-visible {
 }
 
 .project-card p,
-.task-card p {
+.task-card p,
+.member-card p {
   color: #5d6b82;
   font-size: 14px;
   margin-top: 3px;
 }
 
-.project-card > span {
+.project-card > span,
+.member-card > span {
   color: #1769e0;
   font-weight: 800;
 }
@@ -356,7 +360,8 @@ button:focus-visible {
   .metrics,
   .management-grid,
   .project-card,
-  .task-card {
+  .task-card,
+  .member-card {
     grid-template-columns: 1fr;
   }
 }
