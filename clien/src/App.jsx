@@ -538,7 +538,7 @@ function App() {
           {isAdmin && (
             <>
               <div className="section-title">
-                <h3>Members</h3>
+                <h3>Active Members</h3>
                 <span>{users.length}</span>
               </div>
               <div className="member-list">
@@ -552,9 +552,7 @@ function App() {
                         <p>{user.email}</p>
                       </div>
                       <div className="member-actions">
-                        <span className={user.isActive ? 'active-status' : 'inactive-status'}>
-                          {user.isActive ? 'Active' : 'Inactive'}
-                        </span>
+                        <span className="active-status">Active</span>
                         <span>{user.role}</span>
                         {user._id !== auth.user.id && (
                           <button

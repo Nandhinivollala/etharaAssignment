@@ -333,13 +333,14 @@ button:focus-visible {
 
 .member-actions {
   align-items: center;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 70px 80px 110px;
   gap: 8px;
-  justify-content: end;
+  justify-items: end;
 }
 
 .member-actions button {
+  justify-self: stretch;
   min-height: 36px;
   padding: 7px 10px;
 }
@@ -399,6 +400,12 @@ button:focus-visible {
   }
 
   .member-actions {
+    grid-template-columns: 1fr;
     justify-content: start;
+    justify-items: start;
+  }
+
+  .member-actions button {
+    justify-self: start;
   }
 }
