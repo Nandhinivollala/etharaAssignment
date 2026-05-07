@@ -48,6 +48,7 @@ function App() {
   const [projects, setProjects] = useState([])
   const [tasks, setTasks] = useState([])
   const [users, setUsers] = useState([])
+  const activeUsers = users.filter((user) => user.isActive)
 
   const isAdmin = auth?.user?.role === 'Admin'
 
@@ -77,7 +78,7 @@ function App() {
       request('/api/dashboard/summary'),
       request('/api/projects'),
       request('/api/tasks'),
-      isAdmin ? request('/api/users?active=true') : Promise.resolve({ users: [] }),
+      isAdmin ? request('/api/users') : Promise.resolve({ users: [] }),
     ])
 
     setSummary(summaryData.summary)
@@ -102,7 +103,7 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
       }).then((response) => response.json()),
       isAdmin
-        ? fetch(`${API_URL}/api/users?active=true`, {
+        ? fetch(`${API_URL}/api/users`, {
             headers: { Authorization: `Bearer ${token}` },
           }).then((response) => response.json())
         : Promise.resolve({ success: true, users: [] }),
@@ -449,7 +450,7 @@ function App() {
                     onChange={updateProjectMembers}
                     value={projectForm.teamMembers}
                   >
-                    {users.map((user) => (
+                    {activeUsers.map((user) => (
                       <option key={user._id} value={user._id}>
                         {user.name}
                       </option>
@@ -511,7 +512,7 @@ function App() {
                     value={taskForm.assignedTo}
                   >
                     <option value="">Select member</option>
-                    {users.map((user) => (
+                    {activeUsers.map((user) => (
                       <option key={user._id} value={user._id}>
                         {user.name}
                       </option>
@@ -528,7 +529,10 @@ function App() {
                     value={taskForm.dueDate}
                   />
                 </label>
-                <button disabled={loading || projects.length === 0 || users.length === 0} type="submit">
+                <button
+                  disabled={loading || projects.length === 0 || activeUsers.length === 0}
+                  type="submit"
+                >
                   Add Task
                 </button>
               </form>
@@ -538,7 +542,7 @@ function App() {
           {isAdmin && (
             <>
               <div className="section-title">
-                <h3>Active Members</h3>
+                <h3>Members</h3>
                 <span>{users.length}</span>
               </div>
               <div className="member-list">
@@ -552,7 +556,9 @@ function App() {
                         <p>{user.email}</p>
                       </div>
                       <div className="member-actions">
-                        <span className="active-status">Active</span>
+                        <span className={user.isActive ? 'active-status' : 'inactive-status'}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
                         <span>{user.role}</span>
                         {user._id !== auth.user.id && (
                           <button
