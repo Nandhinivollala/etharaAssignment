@@ -277,8 +277,8 @@ function App() {
     <main className="app-shell">
       <section className="topbar">
         <div>
-          <p className="eyebrow">Ethara Assignment</p>
-          <h1>Team Task Manager</h1>
+          <h1>Ethara Assignment</h1>
+          <p className="app-subtitle">Team Task Manager</p>
         </div>
       </section>
 

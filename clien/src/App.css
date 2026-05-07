@@ -42,6 +42,13 @@ h1 {
   line-height: 1.05;
 }
 
+.app-subtitle {
+  color: #5d6b82;
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
 h2 {
   color: #101828;
   font-size: 24px;
