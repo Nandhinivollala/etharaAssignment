@@ -238,6 +238,21 @@ function App() {
     }
   }
 
+  const updateProjectStatus = async (projectId, status) => {
+    setMessage('')
+
+    try {
+      await request(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      })
+      setMessage('Project status updated')
+      await loadWorkspace()
+    } catch (error) {
+      setMessage(error.message)
+    }
+  }
+
   const updateUserStatus = async (userId, isActive) => {
     setMessage('')
 
@@ -591,7 +606,21 @@ function App() {
                     <h3>{project.name}</h3>
                     <p>{project.description || 'No description'}</p>
                   </div>
-                  <span>{project.status}</span>
+                  {isAdmin ? (
+                    <select
+                      onChange={(event) =>
+                        updateProjectStatus(project._id, event.target.value)
+                      }
+                      value={project.status}
+                    >
+                      <option>Planning</option>
+                      <option>In Progress</option>
+                      <option>Completed</option>
+                      <option>On Hold</option>
+                    </select>
+                  ) : (
+                    <span>{project.status}</span>
+                  )}
                 </article>
               ))
             )}
