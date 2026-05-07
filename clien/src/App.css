@@ -6,8 +6,7 @@
 }
 
 .topbar,
-.workspace,
-.status-strip {
+.workspace {
   width: min(1120px, 100%);
   margin: 0 auto;
 }
@@ -81,22 +80,6 @@ button:disabled {
   background: #ffffff;
   border: 1px solid #cfd7e6;
   color: #172033;
-}
-
-.status-strip {
-  align-items: center;
-  background: #10213f;
-  border-radius: 8px;
-  color: #d8e3f8;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 18px;
-  padding: 14px 18px;
-}
-
-.status-strip strong {
-  color: #ffffff;
-  font-size: 15px;
 }
 
 .workspace {
@@ -384,8 +367,7 @@ button:focus-visible {
   }
 
   .topbar,
-  .dashboard-header,
-  .status-strip {
+  .dashboard-header {
     align-items: stretch;
     flex-direction: column;
   }

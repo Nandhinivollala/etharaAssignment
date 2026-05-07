@@ -41,7 +41,6 @@ function App() {
   const [projectForm, setProjectForm] = useState(initialProjectForm)
   const [taskForm, setTaskForm] = useState(initialTaskForm)
   const [auth, setAuth] = useState(null)
-  const [apiStatus, setApiStatus] = useState('Not checked')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [summary, setSummary] = useState(emptySummary)
@@ -265,17 +264,6 @@ function App() {
     }
   }
 
-  const testApi = async () => {
-    setApiStatus('Checking...')
-
-    try {
-      const data = await request('/api/test')
-      setApiStatus(data.message)
-    } catch (error) {
-      setApiStatus(error.message)
-    }
-  }
-
   const logout = () => {
     setAuth(null)
     setProjects([])
@@ -292,14 +280,6 @@ function App() {
           <p className="eyebrow">Ethara Assignment</p>
           <h1>Team Task Manager</h1>
         </div>
-        <button className="ghost-button" onClick={testApi} type="button">
-          Test API
-        </button>
-      </section>
-
-      <section className="status-strip">
-        <span>Backend status</span>
-        <strong>{apiStatus}</strong>
       </section>
 
       <section className="workspace">
