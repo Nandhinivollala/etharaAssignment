@@ -12,6 +12,7 @@ const initialProjectForm = {
   name: '',
   description: '',
   status: 'Planning',
+  teamMembers: [],
 }
 
 const initialTaskForm = {
@@ -79,7 +80,7 @@ function App() {
       request('/api/dashboard/summary'),
       request('/api/projects'),
       request('/api/tasks'),
-      isAdmin ? request('/api/users') : Promise.resolve({ users: [] }),
+      isAdmin ? request('/api/users?active=true') : Promise.resolve({ users: [] }),
     ])
 
     setSummary(summaryData.summary)
@@ -104,7 +105,7 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
       }).then((response) => response.json()),
       isAdmin
-        ? fetch(`${API_URL}/api/users`, {
+        ? fetch(`${API_URL}/api/users?active=true`, {
             headers: { Authorization: `Bearer ${token}` },
           }).then((response) => response.json())
         : Promise.resolve({ success: true, users: [] }),
@@ -131,6 +132,18 @@ function App() {
   const updateProjectForm = (event) => {
     const { name, value } = event.target
     setProjectForm((current) => ({ ...current, [name]: value }))
+  }
+
+  const updateProjectMembers = (event) => {
+    const selectedMembers = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value,
+    )
+
+    setProjectForm((current) => ({
+      ...current,
+      teamMembers: selectedMembers,
+    }))
   }
 
   const updateTaskForm = (event) => {
@@ -176,7 +189,6 @@ function App() {
         method: 'POST',
         body: JSON.stringify({
           ...projectForm,
-          teamMembers: [auth.user.id],
         }),
       })
       setProjectForm(initialProjectForm)
@@ -434,6 +446,21 @@ function App() {
                   />
                 </label>
                 <label>
+                  Team members
+                  <select
+                    multiple
+                    name="teamMembers"
+                    onChange={updateProjectMembers}
+                    value={projectForm.teamMembers}
+                  >
+                    {users.map((user) => (
+                      <option key={user._id} value={user._id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
                   Status
                   <select
                     name="status"
@@ -484,9 +511,10 @@ function App() {
                   <select
                     name="assignedTo"
                     onChange={updateTaskForm}
+                    required
                     value={taskForm.assignedTo}
                   >
-                    <option value="">Assign to me</option>
+                    <option value="">Select member</option>
                     {users.map((user) => (
                       <option key={user._id} value={user._id}>
                         {user.name}
@@ -504,7 +532,7 @@ function App() {
                     value={taskForm.dueDate}
                   />
                 </label>
-                <button disabled={loading || projects.length === 0} type="submit">
+                <button disabled={loading || projects.length === 0 || users.length === 0} type="submit">
                   Add Task
                 </button>
               </form>

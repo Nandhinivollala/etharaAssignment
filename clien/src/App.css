@@ -163,6 +163,11 @@ select {
   padding: 0 12px;
 }
 
+select[multiple] {
+  min-height: 96px;
+  padding: 8px 12px;
+}
+
 input:focus,
 select:focus,
 button:focus-visible {

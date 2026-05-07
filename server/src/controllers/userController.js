@@ -2,7 +2,13 @@ const User = require("../models/User");
 
 const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({ role: "Member" })
+    const filter = { role: "Member" };
+
+    if (req.query.active === "true") {
+      filter.isActive = true;
+    }
+
+    const users = await User.find(filter)
       .select("name email role isActive createdAt")
       .sort({ createdAt: -1 });
 
