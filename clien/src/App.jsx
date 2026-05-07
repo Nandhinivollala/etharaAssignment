@@ -40,10 +40,7 @@ function App() {
   const [form, setForm] = useState(initialAuthForm)
   const [projectForm, setProjectForm] = useState(initialProjectForm)
   const [taskForm, setTaskForm] = useState(initialTaskForm)
-  const [auth, setAuth] = useState(() => {
-    const saved = localStorage.getItem('pm_auth')
-    return saved ? JSON.parse(saved) : null
-  })
+  const [auth, setAuth] = useState(null)
   const [apiStatus, setApiStatus] = useState('Not checked')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -169,7 +166,6 @@ function App() {
       })
 
       setAuth(data)
-      localStorage.setItem('pm_auth', JSON.stringify(data))
       setMessage(`${mode === 'login' ? 'Login' : 'Registration'} successful`)
       setForm(initialAuthForm)
     } catch (error) {
@@ -279,27 +275,12 @@ function App() {
     }
   }
 
-  const checkProfile = async () => {
-    setLoading(true)
-    setMessage('')
-
-    try {
-      const data = await request('/api/auth/me')
-      setMessage(`Token valid for ${data.user.name}`)
-    } catch (error) {
-      setMessage(error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const logout = () => {
     setAuth(null)
     setProjects([])
     setTasks([])
     setUsers([])
     setSummary(emptySummary)
-    localStorage.removeItem('pm_auth')
     setMessage('Logged out')
   }
 
@@ -328,10 +309,10 @@ function App() {
               <h2>{auth.user.name}</h2>
               <p>{auth.user.email}</p>
               <span className="role-badge">{auth.user.role}</span>
+              <span className={auth.user.isActive ? 'active-status' : 'inactive-status'}>
+                {auth.user.isActive ? 'Account Active' : 'Account Deactivated'}
+              </span>
               <div className="button-row">
-                <button onClick={checkProfile} type="button" disabled={loading}>
-                  Verify Token
-                </button>
                 <button className="secondary-button" onClick={logout} type="button">
                   Logout
                 </button>

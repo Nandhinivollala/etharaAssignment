@@ -186,10 +186,25 @@ button:focus-visible {
   padding: 5px 10px;
 }
 
+.active-status,
+.inactive-status {
+  align-self: start;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.active-status {
+  color: #136b35;
+}
+
+.inactive-status {
+  color: #b42318;
+}
+
 .button-row {
   display: grid;
   gap: 10px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .message {
@@ -327,14 +342,6 @@ button:focus-visible {
 .member-actions button {
   min-height: 36px;
   padding: 7px 10px;
-}
-
-.member-actions .active-status {
-  color: #136b35;
-}
-
-.member-actions .inactive-status {
-  color: #b42318;
 }
 
 .task-list {
